@@ -124,7 +124,7 @@ Define o limiar de distância para acionamento de alertas.
 
 ## 📊 Dashboard
 
-Acesse o dashboard visual em: [Space Sense IoT Dashboard](https://vitor-augusto-olv.github.io/SpaceSense-IoT)
+Acesse o dashboard visual em: [Space Sense IoT Dashboard](https://vitor-augusto-olv.github.io/SpaceSense-IoT/dashboard/index.html)
 
 O dashboard exibe em tempo real:
 - Distância detectada pelo sensor
