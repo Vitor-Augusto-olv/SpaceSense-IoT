@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "author": "Space Sense",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp32", "top": 100, "left": 100, "attrs": {} },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "hcsr04",
+      "top": 1.5,
+      "left": 399.1,
+      "attrs": { "distance": "2" }
+    },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd",
+      "top": 400,
+      "left": 360.8,
+      "attrs": { "pins": "i2c" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledVermelho",
+      "top": 274.8,
+      "left": 503,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledVerde",
+      "top": 246,
+      "left": 474.2,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 330.35,
+      "left": 432,
+      "attrs": { "value": "220", "rotate": "90" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": 291.95,
+      "left": 364.8,
+      "attrs": { "value": "220", "rotate": "90" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 217.4,
+      "left": 585.6,
+      "attrs": { "color": "red", "xray": "1" }
+    }
+  ],
+  "connections": [
+    [ "hcsr04:VCC", "esp32:5V", "red", [] ],
+    [ "hcsr04:GND", "esp32:GND.1", "black", [ "v153.6", "h-136.5", "v-0.6" ] ],
+    [ "hcsr04:TRIG", "esp32:5", "green", [] ],
+    [ "hcsr04:ECHO", "esp32:18", "yellow", [] ],
+    [ "lcd:GND", "esp32:GND.2", "black", [ "h-307.2", "v-183" ] ],
+    [ "lcd:VCC", "esp32:5V", "red", [] ],
+    [ "lcd:SDA", "esp32:21", "blue", [] ],
+    [ "lcd:SCL", "esp32:22", "green", [] ],
+    [ "esp32:26", "r1:1", "orange", [] ],
+    [ "r1:2", "ledVermelho:A", "orange", [] ],
+    [ "ledVermelho:C", "esp32:GND.3", "black", [] ],
+    [ "esp32:27", "r2:1", "orange", [] ],
+    [ "r2:2", "ledVerde:A", "orange", [] ],
+    [ "ledVerde:C", "esp32:GND.4", "black", [] ],
+    [ "hcsr04:VCC", "esp32:VIN", "red", [ "h-393.6", "v162.5" ] ],
+    [ "hcsr04:TRIG", "esp32:D5", "green", [ "v0" ] ],
+    [ "hcsr04:ECHO", "esp32:D18", "green", [ "v0" ] ],
+    [ "lcd:VCC", "esp32:VIN", "red", [ "h-267.6", "v-133" ] ],
+    [ "lcd:SDA", "esp32:D21", "green", [ "h-133.2", "v-238.1" ] ],
+    [ "lcd:SCL", "esp32:D22", "green", [ "h-123.6", "v-276.5" ] ],
+    [ "r1:1", "esp32:D26", "green", [ "h-364.8", "v-135" ] ],
+    [ "ledVermelho:C", "esp32:GND.1", "green", [ "h-258.8", "v-67.8" ] ],
+    [ "ledVerde:C", "esp32:GND.1", "green", [ "v19.2", "h-210.8", "v-58.2" ] ],
+    [ "r2:1", "esp32:D27", "green", [ "h-278.4", "v-86.8" ] ],
+    [ "btn1:1.l", "esp32:D4", "green", [ "v-9.6", "h-355.5" ] ],
+    [ "btn1:2.l", "esp32:GND.1", "green", [ "h0" ] ]
+  ],
+  "dependencies": {}
+}

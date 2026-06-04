@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="refresh" content="5" />
+  <title>Space Sense — Dashboard IoT</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0A0E1A; color: #F1F5F9; font-family: -apple-system, sans-serif; padding: 24px; }
+    h1 { font-size: 28px; color: #4F8EF7; margin-bottom: 4px; }
+    .subtitulo { font-size: 13px; color: #94A3B8; margin-bottom: 32px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .card { background: #111827; border-radius: 12px; padding: 20px; border: 1px solid #1E2A3A; }
+    .card-label { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .card-valor { font-size: 32px; font-weight: bold; }
+    .DANGER { color: #EF4444; }
+    .WARNING { color: #F59E0B; }
+    .SAFE { color: #10B981; }
+    .INFO { color: #4F8EF7; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 600; margin-top: 8px; }
+    .badge-DANGER { background: #EF444422; color: #EF4444; }
+    .badge-WARNING { background: #F59E0B22; color: #F59E0B; }
+    .badge-SAFE { background: #10B98122; color: #10B981; }
+    .secao-titulo { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .alerta-card { background: #111827; border-radius: 10px; padding: 14px; margin-bottom: 10px; border: 1px solid #1E2A3A; border-left-width: 4px; }
+    .alerta-titulo { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .alerta-desc { font-size: 12px; color: #94A3B8; }
+    .status-bar { display: flex; align-items: center; gap: 8px; background: #111827; border-radius: 10px; padding: 12px 16px; margin-bottom: 32px; border: 1px solid #1E2A3A; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px #10B981; }
+    .status-texto { font-size: 13px; color: #94A3B8; }
+    .endpoints { background: #111827; border-radius: 12px; padding: 20px; border: 1px solid #1E2A3A; }
+    .endpoint { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #1E2A3A; }
+    .endpoint:last-child { border-bottom: none; }
+    .method { background: #4F8EF722; color: #4F8EF7; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .method-post { background: #10B98122; color: #10B981; }
+    .endpoint-url { font-size: 13px; color: #F1F5F9; font-family: monospace; }
+    .endpoint-desc { font-size: 12px; color: #475569; margin-left: auto; }
+    .rodape { text-align: center; font-size: 12px; color: #475569; margin-top: 32px; }
+    #erro { display: none; background: #EF444422; border: 1px solid #EF4444; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; color: #EF4444; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>🛰 Space Sense IoT</h1>
+  <p class="subtitulo">Dashboard de Monitoramento de Detritos Espaciais — ESP32</p>
+
+  <div id="erro">⚠️ Não foi possível conectar ao ESP32. Exibindo dados simulados.</div>
+
+  <div class="status-bar">
+    <div class="dot" id="statusDot"></div>
+    <span class="status-texto" id="statusTexto">Conectando ao ESP32...</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-label">Distância</div>
+      <div class="card-valor INFO" id="distancia">---</div>
+      <div style="font-size:12px;color:#475569;margin-top:4px">cm</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Nível de Risco</div>
+      <div class="card-valor" id="nivelRisco">---</div>
+      <div id="nivelBadge" class="badge"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Total de Alertas</div>
+      <div class="card-valor INFO" id="totalAlertas">---</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Alerta Manual</div>
+      <div class="card-valor" id="alertaManual">---</div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:32px">
+    <div class="secao-titulo">HISTÓRICO DE ALERTAS</div>
+    <div id="alertasList"><div style="color:#475569;font-size:13px">Carregando alertas...</div></div>
+  </div>
+
+  <div style="margin-bottom:32px">
+    <div class="secao-titulo">ENDPOINTS DOCUMENTADOS</div>
+    <div class="endpoints">
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <span class="endpoint-url">/status</span>
+        <span class="endpoint-desc">Retorna distância e nível de risco</span>
+      </div>
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <span class="endpoint-url">/alerts</span>
+        <span class="endpoint-desc">Lista histórico de alertas</span>
+      </div>
+      <div class="endpoint">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-url">/config</span>
+        <span class="endpoint-desc">Define limiar de distância de risco</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="rodape">Space Sense — FIAP Global Solution 2025 | Atualiza a cada 5s</p>
+
+  <script>
+    const ESP32_IP = 'http://10.10.0.2';
+
+    const mockStatus = {
+      distancia_cm: 120,
+      nivel_risco: 'WARNING',
+      total_alertas: 3,
+      alerta_manual: false,
+      sistema: 'OPERACIONAL'
+    };
+
+    const mockAlertas = {
+      alertas: [
+        { descricao: 'Detrito a 45cm — risco critico', nivel: 'DANGER', timestamp_ms: 5000 },
+        { descricao: 'Alerta manual acionado pelo operador', nivel: 'WARNING', timestamp_ms: 3000 },
+        { descricao: 'Detrito a 120cm — monitorando', nivel: 'WARNING', timestamp_ms: 1000 },
+      ],
+      total: 3
+    };
+
+    function nivelColor(nivel) {
+      return { DANGER: '#EF4444', WARNING: '#F59E0B', SAFE: '#10B981' }[nivel] || '#4F8EF7';
+    }
+
+    function atualizarStatus(data) {
+      document.getElementById('distancia').textContent = data.distancia_cm === -1 ? '---' : data.distancia_cm;
+      const nivel = data.nivel_risco;
+      const nivelEl = document.getElementById('nivelRisco');
+      nivelEl.textContent = nivel;
+      nivelEl.className = 'card-valor ' + nivel;
+      const badge = document.getElementById('nivelBadge');
+      badge.textContent = nivel;
+      badge.className = 'badge badge-' + nivel;
+      document.getElementById('totalAlertas').textContent = data.total_alertas;
+      const manual = document.getElementById('alertaManual');
+      manual.textContent = data.alerta_manual ? 'SIM ⚠️' : 'NAO';
+      manual.className = 'card-valor ' + (data.alerta_manual ? 'WARNING' : 'SAFE');
+      document.getElementById('statusTexto').textContent = 'ESP32 conectado — Sistema ' + data.sistema;
+    }
+
+    function atualizarAlertas(data) {
+      const lista = document.getElementById('alertasList');
+      if (!data.alertas || data.alertas.length === 0) {
+        lista.innerHTML = '<div style="color:#475569;font-size:13px">Nenhum alerta registrado.</div>';
+        return;
+      }
+      lista.innerHTML = data.alertas.map(a => `
+        <div class="alerta-card" style="border-left-color:${nivelColor(a.nivel)}">
+          <div class="alerta-titulo" style="color:${nivelColor(a.nivel)}">${a.nivel}</div>
+          <div class="alerta-desc">${a.descricao}</div>
+        </div>
+      `).join('');
+    }
+
+    async function buscarDados() {
+      try {
+        const [statusRes, alertasRes] = await Promise.all([
+          fetch(ESP32_IP + '/status'),
+          fetch(ESP32_IP + '/alerts')
+        ]);
+        const status = await statusRes.json();
+        const alertas = await alertasRes.json();
+        atualizarStatus(status);
+        atualizarAlertas(alertas);
+        document.getElementById('erro').style.display = 'none';
+        document.getElementById('statusDot').style.background = '#10B981';
+      } catch (e) {
+        document.getElementById('erro').style.display = 'block';
+        document.getElementById('statusDot').style.background = '#EF4444';
+        document.getElementById('statusTexto').textContent = 'ESP32 offline — exibindo dados simulados';
+        atualizarStatus(mockStatus);
+        atualizarAlertas(mockAlertas);
+      }
+    }
+
+    buscarDados();
+    setInterval(buscarDados, 5000);
+  </script>
+</body>
+</html>
